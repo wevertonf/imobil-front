@@ -1,12 +1,11 @@
-// app/imoveis/visualizar/[id]/page.js
-"use client";
-
+// src/app/imoveis/visualizar/[id]/page.js
+// ✅ Pode continuar sendo Server Component
 import ImovelDetalhe from '@/components/imoveis/ImovelDetalhe';
+import * as React from 'react'; // Importe o React
 
-export default function VisualizarImovelPage({ params }) {
-  const { id } = params;
+export default function VisualizarImovelPage({ params }) { // params é uma Promise
+  const { id } = React.use(params); // ✅ Desembrulhe a Promise com React.use()
 
-  // Converter id para número (pode vir como string)
   const imovelId = parseInt(id, 10);
 
   if (isNaN(imovelId)) {
