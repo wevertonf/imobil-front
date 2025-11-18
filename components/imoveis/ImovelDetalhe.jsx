@@ -10,7 +10,9 @@ import { useAuth } from '@/context/AuthContext'; // Para verificar se pode edita
 import StyledCard from '@/components/ui/StyledCard';
 import StyledButton from '@/components/ui/StyledButton';
 import { toast } from 'sonner';
-import { Edit, Eye, Home, Image, Camera, Trash2, DollarSign, Bed, Bath, Car } from 'lucide-react';
+import { Edit, Eye, Home, Image, Camera, Trash2, DollarSign, Bed, Bath, Car, User, Building } from 'lucide-react';
+// Importe o componente de upload de fotos AQUI
+import FotosImoveisUpload from '@/components/imoveis/FotosImoveisUpload'; // Importe o componente de upload de fotos
 
 export default function ImovelDetalhe({ imovelId: propId }) {
   const { id } = useParams(); // Se o ID vier pela URL (app router)
