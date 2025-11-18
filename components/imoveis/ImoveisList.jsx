@@ -98,12 +98,11 @@ export default function ImoveisList() {
               <tr key={imovel.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{imovel.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold max-w-xs truncate">{imovel.titulo}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {imovel.bairro ? `${imovel.bairro.nome}, ${imovel.bairro.cidade}` : '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {imovel.tipoImovel ? imovel.tipoImovel.nome : '-'}
-                </td>
+                {/* --- CAMPOS DO DTO --- */}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{imovel.nome_bairro || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{imovel.cidade_bairro || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{imovel.nome_tipo_imovel || '-'}</td>
+                {/* --- CAMPOS DO DTO --- */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {imovel.preco_venda ? `R$ ${imovel.preco_venda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-'}
                 </td>

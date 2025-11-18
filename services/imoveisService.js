@@ -8,7 +8,9 @@ import { toast } from 'sonner'; // Opcional, mas útil para feedbacks
 export const getAllImoveis = async () => {
   try {
     const response = await apiGeral.get('/imoveis'); // Chamada para http://localhost:8080/imoveis
-    return response.data; // Retorna a lista de imóveis
+    // A resposta deve ser uma lista de ImoveisListDTO
+    // Ex: [{ id: 1, titulo: "Casa", ..., nome_bairro: "Jardim Paulista", cidade_bairro: "São Paulo", ... }]
+    return response.data;
   } catch (error) {
     console.error("Erro ao buscar imóveis:", error);
     throw error;
@@ -18,13 +20,15 @@ export const getAllImoveis = async () => {
 // GET /imoveis/{id}
 export const getImovelById = async (id) => {
   try {
-    const response = await apiGeral.get(`/imoveis/${id}`); // Chamada para http://localhost:8080/imoveis/123
-    return response.data; // Retorna o objeto do imóvel
+    const response = await apiGeral.get(`/imoveis/${id}`);
+    // A resposta pode ser o ImoveisModel completo ou um ImoveisDTO de detalhes
+    return response.data;
   } catch (error) {
     console.error(`Erro ao buscar imóvel com ID ${id}:`, error);
     throw error;
   }
 };
+
 
 // GET /imoveis/usuario/{id}
 export const getImoveisByUsuarioId = async (usuarioId) => {
