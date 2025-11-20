@@ -15,6 +15,7 @@ export default function EditarImovelPage() {
   const { usuario: usuarioLogado } = useAuth(); // Pegar usuário logado
   const [imovel, setImovel] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // Usar error para mensagens gerais
   const [permissaoNegada, setPermissaoNegada] = useState(false);
 
   useEffect(() => {
@@ -27,10 +28,14 @@ export default function EditarImovelPage() {
 
     const fetchImovel = async () => {
       try {
-        const data = await getImovelById(parseInt(id, 10));
+        setLoading(true);
+        setError(null);
+        setPermissaoNegada(false); // Reiniciar estado de permissão
+
+        const data = await getImovelById(id);
         if (data) {
           // Verificar se o usuário logado é o proprietário ou admin
-          if (usuarioLogado.tipo !== 'ADMIN' && data.usuario?.id !== usuarioLogado.id) {
+          if (usuarioLogado.tipo !== 'ADMIN' && data.id_usuario !== usuarioLogado.id) {
             setPermissaoNegada(true);
             toast.error("Você não tem permissão para editar este imóvel.");
             return;
@@ -42,7 +47,7 @@ export default function EditarImovelPage() {
         }
       } catch (error) {
         console.error("Erro ao carregar imóvel para edição:", error);
-        toast.error("Erro ao carregar imóvel.");
+        toast.error("Erro ao carregar imóvel."+ (error.response?.data?.message || error.message || 'Erro desconhecido'));
         router.push('/imoveis');
       } finally {
         setLoading(false);
@@ -80,7 +85,7 @@ export default function EditarImovelPage() {
   // Renderizar o formulário apenas se tiver permissão
   return (
     <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <ImoveisForm imovel={imovel} /> {/* Passar o imóvel carregado */}
+      <ImoveisForm imovelId={imovel.id} /> {/* Passar o ID do imóvel para o form */}
     </div>
   );
 }

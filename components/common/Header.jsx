@@ -48,25 +48,6 @@ export default function Header() {
           {usuario ? ( // Se estiver logado
             <>
               {/* Links baseados no tipo de usuário */}
-              {isAdmin() && (
-                <>
-                  <Link href="/usuarios">
-                    <Button variant={isActive('/usuarios') ? 'secondary' : 'ghost'} size="sm" className="text-white hover:text-white hover:opacity-90">
-                      Usuários
-                    </Button>
-                  </Link>
-                  <Link href="/tipos-imoveis">
-                    <Button variant={isActive('/tipos-imoveis') ? 'secondary' : 'ghost'} size="sm" className="text-white hover:text-white hover:opacity-90">
-                      Tipos de Imóveis
-                    </Button>
-                  </Link>
-                  <Link href="/bairros">
-                    <Button variant={isActive('/bairros') ? 'secondary' : 'ghost'} size="sm" className="text-white hover:text-white hover:opacity-90">
-                      Bairros
-                    </Button>
-                  </Link>
-                </>
-              )}
               {(isAdmin() || isCorretor()) && ( // Links para admin e corretor
                 <>
                   <Link href="/imoveis">
@@ -84,6 +65,26 @@ export default function Header() {
                   )}
                 </>
               )}
+              {isAdmin() && (
+                <>
+                  <Link href="/bairros">
+                    <Button variant={isActive('/bairros') ? 'secondary' : 'ghost'} size="sm" className="text-white hover:text-white hover:opacity-90">
+                      Bairros
+                    </Button>
+                  </Link>
+                  <Link href="/tipos-imoveis">
+                    <Button variant={isActive('/tipos-imoveis') ? 'secondary' : 'ghost'} size="sm" className="text-white hover:text-white hover:opacity-90">
+                      Tipos de Imóveis
+                    </Button>
+                  </Link>
+                  <Link href="/usuarios">
+                    <Button variant={isActive('/usuarios') ? 'secondary' : 'ghost'} size="sm" className="text-white hover:text-white hover:opacity-90">
+                      Usuários
+                    </Button>
+                  </Link>
+                </>
+              )}
+              
               <div className="ml-4 flex items-center space-x-2">
                 <span className="text-sm hidden sm:inline">Olá, {usuario.nome}</span>
                 <span className="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-full">{usuario.tipo}</span>

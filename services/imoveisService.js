@@ -95,7 +95,7 @@ export const deleteImovel = async (id) => {
 export const getMeusImoveis = async () => {
   try {
     const response = await apiGeral.get('/imoveis/meus'); // Chamada para http://localhost:8080/imoveis/meus
-    return response.data; // Retorna a lista de imóveis
+    return response.data; // Retorna a lista de DTOs
   } catch (error) {
     console.error("Erro ao buscar meus imóveis:", error);
     throw error;

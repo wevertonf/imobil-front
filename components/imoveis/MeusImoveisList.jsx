@@ -1,19 +1,29 @@
-// components/imoveis/ImoveisList.jsx
+// components/imoveis/MeusImoveisList.jsx
 "use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getAllImoveis, deleteImovel } from '@/services/imoveisService';
+import { getMeusImoveis, deleteImovel } from '@/services/imoveisService'; // Importar função de exclusão
 import { useAuth } from '@/context/AuthContext';
 import StyledCard from '@/components/ui/StyledCard';
 import StyledButton from '@/components/ui/StyledButton';
 import { toast } from 'sonner';
 import { Plus, Edit, Eye, Trash2, Home, MapPin, DollarSign, Bed, Bath, Car } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 // Componente para exibir um único imóvel (reutilizável)
-function ImovelItem({ imovel, usuarioLogado, onDelete }) { // <-- Adicione onDelete como prop
-  const podeEditarExcluir = usuarioLogado && (usuarioLogado.tipo === 'ADMIN' || imovel.id_usuario === usuarioLogado.id);
-  const podeVer = usuarioLogado && (usuarioLogado.tipo === 'ADMIN' || imovel.id_usuario === usuarioLogado.id);
+function ImovelItem({ imovel, usuarioLogado, onDelete }) { // <-- Adicionar onDelete como prop
+  console.log("ImovelItem props:", { imovel, usuarioLogado });
+  // Lógica de permissão: Admin pode editar/excluir qualquer um, proprietário pode editar/excluir seus próprios
+  const podeEditarExcluir = usuarioLogado && (
+    usuarioLogado.tipo === 'ADMIN' ||  // Admin pode editar/excluir qualquer imóvel
+    imovel.id_usuario === usuarioLogado.id // Proprietário pode editar/excluir seus próprios
+  );
+  console.log("Pode editar/excluir?", podeEditarExcluir); // Log temporário
+  console.log("Tipo do usuário logado:", usuarioLogado?.tipo); // Log temporário
+  console.log("ID do usuário no imóvel:", imovel.id_usuario); // Log temporário
+  console.log("ID do usuário logado:", usuarioLogado?.id); // Log temporário
+  
 
   return (
     <div className="border rounded-lg p-4 shadow-sm bg-white hover:shadow-md transition-shadow">
@@ -77,25 +87,23 @@ function ImovelItem({ imovel, usuarioLogado, onDelete }) { // <-- Adicione onDel
       </div>
 
       <div className="mt-4 flex justify-end space-x-2">
-        {podeVer && (
-          <Link href={`/imoveis/visualizar/${imovel.id}`}>
-            <StyledButton variant="outline" size="sm">
-              <Eye className="h-4 w-4 mr-1" /> Ver
-            </StyledButton>
-          </Link>
-        )}
+        <Link href={`/imoveis/visualizar/${imovel.id}`}>
+          <StyledButton variant="outline" size="sm">
+            <Eye className="h-4 w-4 mr-1" /> Ver
+          </StyledButton>
+        </Link>
         {/* Botões de edição e exclusão aparecem apenas se o usuário tiver permissão */}
-        {podeEditarExcluir && ( // <-- ✅ Verifica a permissão correta
+        {podeEditarExcluir && (
           <>
             <Link href={`/imoveis/editar/${imovel.id}`}>
-              <StyledButton variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <StyledButton variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-700">
                 <Edit className="h-4 w-4 mr-1" /> Editar
               </StyledButton>
             </Link>
             <StyledButton
               variant="danger"
               size="sm"
-              onClick={() => onDelete(imovel)} // Se onDelete for passado, ou chame uma função local
+              onClick={() => onDelete(imovel)}
             >
               <Trash2 className="h-4 w-4 mr-1" /> Excluir
             </StyledButton>
@@ -107,47 +115,44 @@ function ImovelItem({ imovel, usuarioLogado, onDelete }) { // <-- Adicione onDel
 }
 
 // Componente principal da lista
-export default function ImoveisList() {
+export default function MeusImoveisList() {
   const [imoveis, setImoveis] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { usuario: usuarioLogado } = useAuth(); // Pegar usuário logado do contexto
+  const { usuario: usuarioLogado } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchImoveis = async () => {
+    if (!usuarioLogado) {
+      toast.info("Faça login para acessar seus imóveis.");
+      router.push('/login');
+      return;
+    }
+
+    const fetchMeusImoveis = async () => {
       try {
         setLoading(true);
         setError(null);
-
-        // Buscar TODOS os imóveis
-        const data = await getAllImoveis();
-
+        const data = await getMeusImoveis();
         setImoveis(data);
       } catch (err) {
-        setError(err.message || 'Erro ao carregar imóveis.');
-        toast.error("Erro ao carregar imóveis: " + (err.message || 'Erro desconhecido'));
-        console.error("Erro no componente ImoveisList:", err);
+        console.error("Erro no componente MeusImoveisList:", err);
+        if (err.response?.status === 401) {
+          toast.error("Sua sessão expirou. Faça login novamente.");
+          router.push('/login');
+          return;
+        }
+        setError(err.message || 'Erro ao carregar seus imóveis.');
+        toast.error("Erro ao carregar seus imóveis: " + (err.message || 'Erro desconhecido'));
       } finally {
         setLoading(false);
       }
     };
 
-    fetchImoveis();
-  }, []);
-
-  const handleDelete = (imovel) => { // <-- Função definida no escopo principal
-    if (confirm(`Tem certeza que deseja excluir o imóvel "${imovel.titulo}" (ID: ${imovel.id})?`)) {
-      deleteImovel(imovel.id)
-        .then(() => {
-          setImoveis(imoveis.filter(i => i.id !== imovel.id));
-          toast.success(`Imóvel "${imovel.titulo}" excluído com sucesso!`);
-        })
-        .catch((error) => {
-          console.error("Erro ao excluir imóvel:", error);
-          toast.error("Erro ao excluir imóvel: " + (error.response?.data?.message || error.message || 'Erro desconhecido'));
-        });
-    }
-  };
+    fetchMeusImoveis();
+    // Log temporário para debug
+    console.log("Usuário logado no MeusImoveisList:", usuarioLogado);
+  }, [usuarioLogado, router]);
 
   if (loading) {
     return (
@@ -165,14 +170,33 @@ export default function ImoveisList() {
     );
   }
 
+  if (!usuarioLogado) {
+    return <div>Verificando login...</div>;
+  }
+
+  // --- Função de exclusão (definida no escopo do componente pai) ---
+  const handleDelete = (imovel) => {
+    if (confirm(`Tem certeza que deseja excluir o imóvel "${imovel.titulo}" (ID: ${imovel.id})?`)) {
+      deleteImovel(imovel.id) // Chama a função do serviço
+        .then(() => {
+          // Atualiza a lista localmente após exclusão bem-sucedida
+          setImoveis(imoveis.filter(i => i.id !== imovel.id));
+          toast.success(`Imóvel "${imovel.titulo}" excluído com sucesso!`);
+        })
+        .catch((error) => {
+          console.error("Erro ao excluir imóvel:", error);
+          toast.error("Erro ao excluir imóvel: " + (error.response?.data?.message || error.message || 'Erro desconhecido'));
+        });
+    }
+  };
+
   return (
     <StyledCard
-      title="Todos os Imóveis"
-      description="Lista de todos os imóveis cadastrados no sistema."
+      title="Meus Imóveis"
+      description={`Lista de imóveis cadastrados por você (${usuarioLogado.nome}).`}
       className="w-full max-w-6xl mx-auto"
       footer={
-        // Mostrar botão de criar apenas se estiver logado
-        usuarioLogado && (
+        usuarioLogado && (usuarioLogado.tipo === 'ADMIN' || usuarioLogado.tipo === 'CORRETOR') && (
           <div className="flex justify-end">
             <Link href="/imoveis/criar">
               <StyledButton variant="primary" className="w-full sm:w-auto">
@@ -190,14 +214,20 @@ export default function ImoveisList() {
               key={imovel.id}
               imovel={imovel}
               usuarioLogado={usuarioLogado}
-              onDelete={handleDelete} // <-- PASSE A FUNÇÃO handleDelete PARA O COMPONENTE FILHO
+              onDelete={handleDelete} // <-- Passa a função handleDelete para o filho
             />
           ))}
         </div>
       ) : (
         <div className="text-center py-10">
-          <p className="text-gray-500">Nenhum imóvel encontrado.</p>
-          {/* Botão de criar pode aparecer aqui também, se apropriado */}
+          <p className="text-gray-500">Você ainda não cadastrou nenhum imóvel.</p>
+          {usuarioLogado && (usuarioLogado.tipo === 'ADMIN' || usuarioLogado.tipo === 'CORRETOR') && (
+            <Link href="/imoveis/criar">
+              <StyledButton variant="primary" className="mt-4">
+                Cadastrar Primeiro Imóvel
+              </StyledButton>
+            </Link>
+          )}
         </div>
       )}
     </StyledCard>

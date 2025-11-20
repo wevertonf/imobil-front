@@ -70,10 +70,12 @@ export default function ImoveisForm({ imovelId }) { // imovelId é passado se fo
       const fetchImovel = async () => {
         try {
           setLoading(true);
+          setError(null);
+          setPodeEditar(true); // Reiniciar permissão ao tentar carregar
           const data = await getImovelById(imovelId);
           if (data) {
             // Verificar se o usuário logado pode editar este imóvel
-            if (usuarioLogado.tipo !== 'ADMIN' && data.usuario?.id !== usuarioLogado.id) {
+            if (usuarioLogado.tipo !== 'ADMIN' && data.id_usuario !== usuarioLogado.id) {
               setError("Você não tem permissão para editar este imóvel.");
               setPodeEditar(false); // Estado para desabilitar campos/botões
               toast.error("Você não tem permissão para editar este imóvel.");
@@ -100,9 +102,9 @@ export default function ImoveisForm({ imovelId }) { // imovelId é passado se fo
               caracteristicas: data.caracteristicas || '',
               destaque: data.destaque || false,
               // IDs para relacionamentos
-              tipoImovelId: data.tipoImovel?.id || null,
-              bairroId: data.bairro?.id || null,
-              // usuarioId: data.usuario?.id || null, // Pode não ser editável
+              tipoImovelId: data.id_tipo_imovel || null,
+              bairroId: data.id_bairro || null,
+              // usuarioId: data.id_usuario || null, // Pode não ser editável
             });
           } else {
             toast.error("Imóvel não encontrado.");
