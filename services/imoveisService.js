@@ -31,15 +31,6 @@ export const getImovelById = async (id) => {
 
 
 // GET /imoveis/usuario/{id}
-export const getImoveisByUsuarioId = async (usuarioId) => {
-  try {
-    const response = await apiGeral.get(`/imoveis/usuario/${usuarioId}`); // Chamada para http://localhost:8080/imoveis/usuario/123
-    return response.data;
-  } catch (error) {
-    console.error(`Erro ao buscar imóveis do usuário com ID ${usuarioId}:`, error);
-    throw error;
-  }
-};
 
 // GET /imoveis/bairro/{id}
 export const getImoveisByBairroId = async (bairroId) => {
@@ -96,6 +87,30 @@ export const deleteImovel = async (id) => {
     return true; // Indica sucesso
   } catch (error) {
     console.error(`Erro ao excluir imóvel com ID ${id}:`, error);
+    throw error;
+  }
+};
+
+// GET /imoveis/meus (imóveis do usuário logado)
+export const getMeusImoveis = async () => {
+  try {
+    const response = await apiGeral.get('/imoveis/meus'); // Chamada para http://localhost:8080/imoveis/meus
+    return response.data; // Retorna a lista de imóveis
+  } catch (error) {
+    console.error("Erro ao buscar meus imóveis:", error);
+    throw error;
+  }
+};
+
+// GET /imoveis/usuario/{id} (imóveis de um usuário específico - se tiver permissão)
+export const getImoveisByUsuarioId = async (usuarioId) => {
+  try {
+    // Se for para buscar os imóveis de outro usuário, talvez precise de permissão (admin)
+    // Para "Meus Imóveis", use getMeusImoveis()
+    const response = await apiGeral.get(`/imoveis/usuario/${usuarioId}`); // Chamada para http://localhost:8080/imoveis/usuario/123
+    return response.data;
+  } catch (error) {
+    console.error(`Erro ao buscar imóveis do usuário ${usuarioId}:`, error);
     throw error;
   }
 };

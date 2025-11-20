@@ -53,8 +53,10 @@ export default function UsuarioForm({ userId }) { // userId é passado se for ed
     }
   }, [userId, router]);
 
+  // Certifique-se de que o handleChange atualiza o estado corretamente
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // console.log("Campo alterado:", name, "Valor:", value); // Log para debug
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -65,6 +67,8 @@ export default function UsuarioForm({ userId }) { // userId é passado se for ed
     e.preventDefault();
     setError(null);
     setLoading(true);
+
+    console.log("Dados sendo enviados:", formData);
 
     try {
       if (userId) {
@@ -166,9 +170,10 @@ export default function UsuarioForm({ userId }) { // userId é passado se for ed
               required
               className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 border-gray-300"
             >
-              <option value="CLIENTE">Cliente</option>
-              <option value="CORRETOR">Corretor</option>
+              <option value="">Selecione um tipo</option>
               <option value="ADMIN">Administrador</option>
+              <option value="CORRETOR">Corretor</option>
+
             </select>
           </div>
         </div>

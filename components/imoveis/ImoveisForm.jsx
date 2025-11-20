@@ -40,10 +40,11 @@ export default function ImoveisForm({ imovelId }) { // imovelId é passado se fo
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [podeEditar, setPodeEditar] = useState(true); // Estado para controlar permissão de edição
+  const { usuario: usuarioLogado } = useAuth();
   const [tiposImoveis, setTiposImoveis] = useState([]);
   const [bairros, setBairros] = useState([]);
   const router = useRouter();
-  const { usuario } = useAuth(); // Obter usuário logado do contexto
 
   useEffect(() => {
     // Carregar tipos e bairros
@@ -69,31 +70,39 @@ export default function ImoveisForm({ imovelId }) { // imovelId é passado se fo
       const fetchImovel = async () => {
         try {
           setLoading(true);
-          const imovel = await getImovelById(imovelId);
-          if (imovel) {
+          const data = await getImovelById(imovelId);
+          if (data) {
+            // Verificar se o usuário logado pode editar este imóvel
+            if (usuarioLogado.tipo !== 'ADMIN' && data.usuario?.id !== usuarioLogado.id) {
+              setError("Você não tem permissão para editar este imóvel.");
+              setPodeEditar(false); // Estado para desabilitar campos/botões
+              toast.error("Você não tem permissão para editar este imóvel.");
+              // Opcional: redirecionar
+              // router.push('/imoveis');
+              return;
+            }
             setFormData({
-              titulo: imovel.titulo || '',
-              descricao: imovel.descricao || '',
-              preco_venda: imovel.preco_venda || null,
-              preco_aluguel: imovel.preco_aluguel || null,
-              finalidade: imovel.finalidade || 'VENDA_E_ALUGUEL',
-              status: imovel.status || 'DISPONIVEL',
-              dormitorios: imovel.dormitorios || 0,
-              banheiros: imovel.banheiros || 0,
-              garagem: imovel.garagem || 0,
-              area_total: imovel.area_total || null,
-              area_construida: imovel.area_construida || null,
-              endereco: imovel.endereco || '',
-              numero: imovel.numero || '',
-              complemento: imovel.complemento || '',
-              cep: imovel.cep || '',
-              caracteristicas: imovel.caracteristicas || '',
-              destaque: imovel.destaque || false,
-
+              titulo: data.titulo || '',
+              descricao: data.descricao || '',
+              preco_venda: data.preco_venda || null,
+              preco_aluguel: data.preco_aluguel || null,
+              finalidade: data.finalidade || 'VENDA_E_ALUGUEL',
+              status: data.status || 'DISPONIVEL',
+              dormitorios: data.dormitorios || 0,
+              banheiros: data.banheiros || 0,
+              garagem: data.garagem || 0,
+              area_total: data.area_total || null,
+              area_construida: data.area_construida || null,
+              endereco: data.endereco || '',
+              numero: data.numero || '',
+              complemento: data.complemento || '',
+              cep: data.cep || '',
+              caracteristicas: data.caracteristicas || '',
+              destaque: data.destaque || false,
               // IDs para relacionamentos
-              tipoImovelId: imovel.tipoImovel?.id || null,
-              bairroId: imovel.bairro?.id || null,
-              // usuarioId: imovel.usuario?.id || null, // Pode não ser editável
+              tipoImovelId: data.tipoImovel?.id || null,
+              bairroId: data.bairro?.id || null,
+              // usuarioId: data.usuario?.id || null, // Pode não ser editável
             });
           } else {
             toast.error("Imóvel não encontrado.");
@@ -112,14 +121,14 @@ export default function ImoveisForm({ imovelId }) { // imovelId é passado se fo
       fetchImovel();
     } else {
       // Modo de criação: preencher usuarioId automaticamente
-      if (usuario) {
+      if (usuarioLogado) {
         setFormData(prev => ({
           ...prev,
-          usuarioId: usuario.id // Preenche automaticamente com ID do usuário logado
+          usuarioId: usuarioLogado.id // Preenche automaticamente com ID do usuário logado
         }));
       }
     }
-  }, [imovelId, router, usuario]);
+  }, [imovelId, router, usuarioLogado]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -131,13 +140,17 @@ export default function ImoveisForm({ imovelId }) { // imovelId é passado se fo
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!podeEditar) { // Verificar se pode editar antes de enviar
+        toast.error("Você não tem permissão para salvar alterações neste imóvel.");
+        return;
+    }
     setError(null);
     setLoading(true);
 
     // Adicionar o ID do usuário logado (se não estiver no formData)
     const dadosParaEnviar = {
       ...formData,
-      usuarioId: usuario?.id // Preenche com o ID do usuário logado
+      usuarioId: usuarioLogado?.id // Preenche com o ID do usuário logado
     };
 
     try {

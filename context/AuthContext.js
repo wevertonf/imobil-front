@@ -11,18 +11,15 @@ export function AuthProvider({ children }) {
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    // Verificar status de login ao montar o provedor (quando o app inicia ou o provedor é reinserido)
     const verificarLogin = async () => {
       try {
         const response = await getStatusUsuario();
-        // getStatusUsuario agora deve retornar { usuario: {...}, logado: true/false }
         if (response.data.logado) {
           setUsuario(response.data.usuario);
         } else {
           setUsuario(null);
         }
       } catch (error) {
-        // Se der 401 ou outro erro, assume que não está logado
         setUsuario(null);
       } finally {
         setCarregando(false);
@@ -32,16 +29,15 @@ export function AuthProvider({ children }) {
     verificarLogin();
   }, []);
 
-  // Função para atualizar o estado após login bem-sucedido
   const login = (userData) => {
     setUsuario(userData);
   };
 
-  // Função para atualizar o estado após logout
   const logout = () => {
     setUsuario(null);
   };
 
+  // Retorna apenas os estados e funções básicas para o Provider
   return (
     <AuthContext.Provider value={{ usuario, carregando, login, logout }}>
       {children}
@@ -49,10 +45,18 @@ export function AuthProvider({ children }) {
   );
 }
 
+// O hook useAuth retorna os valores do contexto e adiciona as funções auxiliares
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context;
+
+  // Funções auxiliares definidas dentro do hook, usando o 'context' atual
+  const isAdmin = () => context.usuario?.tipo === 'ADMIN';
+  const isCorretor = () => context.usuario?.tipo === 'CORRETOR';
+  const isVisitante = () => context.usuario === null;
+
+  // Retorna o contexto original + as funções auxiliares
+  return { ...context, isAdmin, isCorretor, isVisitante };
 };
