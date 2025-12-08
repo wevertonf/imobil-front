@@ -20,6 +20,7 @@ export const apiGeral = axios.create({
   withCredentials: true, // <--- ESTA LINHA É CRUCIAL AQUI TAMBÉM!
 });
 
+
 // Função para fazer login
 export const loginUsuario = async (credentials) => {
   try {

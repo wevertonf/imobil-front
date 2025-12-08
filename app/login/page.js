@@ -5,12 +5,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { loginUsuario } from '@/services/authService';
-import { useAuth } from '@/context/AuthContext'; // <-- Importe o hook
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Home, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -19,7 +20,7 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { login } = useAuth(); // <-- Pegue a função login do contexto
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,11 +35,9 @@ export default function LoginPage() {
       const response = await loginUsuario(formData);
 
       if (response.data.logado) {
-        // Atualize o estado global de autenticação
-        login(response.data.usuario); // <-- Chama a função do contexto para atualizar o estado
-
-        toast.success("Login realizado com sucesso!");
-        router.push('/dashboard'); // ou '/'
+        login(response.data.usuario);
+        toast.success("Login realizado com sucesso! 🎉");
+        router.push('/imoveis');
       } else {
         toast.error(response.data.mensagem || "Credenciais inválidas.");
       }
@@ -52,79 +51,105 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-xl rounded-2xl border-0 bg-white">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-3xl font-bold text-gray-900">Acesse sua Conta</CardTitle>
-            <CardDescription className="text-gray-600">
-              Entre com seu e-mail e senha para continuar
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 relative overflow-hidden">
+      {/* Efeitos de fundo decorativos */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo/Brand */}
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl shadow-lg shadow-purple-500/30 mb-4 transform hover:scale-110 transition-transform duration-300">
+            <Home className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">Laion Imobiliária</h1>
+        </div>
+
+        <Card className="shadow-2xl rounded-2xl border border-purple-500/20 bg-slate-800/50 backdrop-blur-xl transform hover:scale-[1.01] transition-transform duration-300">
+          <CardHeader className="space-y-2 text-center pb-8">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Bem-vindo de Volta
+            </CardTitle>
+            <CardDescription className="text-gray-300 text-base">
+              Entre com suas credenciais para continuar
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 border-gray-300"
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="senha">Senha</Label>
-                  <Link href="/esqueci-minha-senha" className="text-sm font-medium text-blue-600 hover:underline">
-                    Esqueceu a senha?
-                  </Link>
+
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Campo E-mail */}
+              <div className="space-y-2 group">
+                <Label htmlFor="email" className="text-gray-200 font-medium flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-purple-400" />
+                  E-mail
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="bg-slate-900/50 border-purple-500/30 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition-all pl-4 h-12 rounded-xl"
+                  />
                 </div>
-                <Input
-                  id="senha"
-                  name="senha"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.senha}
-                  onChange={handleChange}
-                  required
-                  className="focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 border-gray-300"
-                />
               </div>
+
+              {/* Campo Senha */}
+              <div className="space-y-2 group">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="senha" className="text-gray-200 font-medium flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-purple-400" />
+                    Senha
+                  </Label>
+                  
+                </div>
+                <div className="relative">
+                  <Input
+                    id="senha"
+                    name="senha"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.senha}
+                    onChange={handleChange}
+                    required
+                    className="bg-slate-900/50 border-purple-500/30 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition-all pl-4 h-12 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              {/* Botão Submit */}
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md py-6"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all h-12 rounded-xl font-semibold text-base group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     Entrando...
-                  </>
+                  </span>
                 ) : (
-                  "Entrar"
+                  <span className="flex items-center justify-center gap-2">
+                    Entrar
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
                 )}
               </Button>
             </form>
+
+            
+
+            
           </CardContent>
-          <CardFooter className="flex flex-col">
-            <p className="text-center text-sm text-gray-600 mb-2">
-              Ainda não tem uma conta?{' '}
-              <Link href="/cadastro" className="font-semibold text-blue-600 hover:underline">
-                Cadastre-se
-              </Link>
-            </p>
-            <Link href="/" className="text-center text-sm text-gray-500 hover:underline">
-              Voltar para a página inicial
-            </Link>
-          </CardFooter>
+
+        
         </Card>
+
       </div>
     </div>
   );

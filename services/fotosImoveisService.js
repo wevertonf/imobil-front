@@ -1,85 +1,99 @@
 // services/fotosImoveisService.js
-import { apiGeral } from './authService'; // Usar a instância já configurada com withCredentials
-import { toast } from 'sonner'; // Opcional, mas útil para feedbacks
+import axios from 'axios';
 
-// --- Funções CRUD para Fotos de Imóveis ---
+const API_URL = 'http://localhost:8080';
 
-// GET /fotos-imoveis
-export const getAllFotos = async () => {
+// Criar instância do axios com credenciais
+const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true, // Importante para enviar cookies de sessão
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
+});
+
+/**
+ * Upload de foto de imóvel
+ * @param {FormData} formData - FormData já montado com 'arquivo' e 'dados'
+ */
+export const uploadFotoImovel = async (formData) => {
   try {
-    const response = await apiGeral.get('/fotos-imoveis');
+    const response = await api.post('/fotos-imoveis', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   } catch (error) {
-    console.error("Erro ao buscar fotos de imóveis:", error);
+    console.error('Erro ao fazer upload de foto:', error);
     throw error;
   }
 };
 
-// GET /fotos-imoveis/{id}
-export const getFotoById = async (id) => {
-  try {
-    const response = await apiGeral.get(`/fotos-imoveis/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Erro ao buscar foto com ID ${id}:`, error);
-    throw error;
-  }
-};
-
-// GET /fotos-imoveis/imoveis/{id}
+/**
+ * Buscar todas as fotos de um imóvel
+ */
 export const getFotosByImovelId = async (imovelId) => {
   try {
-    const response = await apiGeral.get(`/fotos-imoveis/imoveis/${imovelId}`);
-    return response.data; // Retorna uma lista de fotos
-  } catch (error) {
-    console.error(`Erro ao buscar fotos do imóvel com ID ${imovelId}:`, error);
-    throw error;
-  }
-};
-
-// POST /fotos-imoveis (upload de arquivo multipart/form-data)
-export const uploadFotoImovel = async (arquivo, dados) => {
-  try {
-    // Criar FormData para enviar arquivo e dados JSON
-    const formData = new FormData();
-    formData.append('arquivo', arquivo);
-    formData.append('dados', JSON.stringify(dados)); // Converter objeto JS para string JSON
-
-    // Configuração especial para upload de arquivos
-    const response = await apiGeral.post('/fotos-imoveis', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data', // Importante!
-        // Não inclua 'application/json' aqui
-      },
-      // withCredentials: true já está configurado na instância apiGeral
-    });
-
-    return response.data; // O backend pode retornar uma mensagem ou o ID da foto criada
-  } catch (error) {
-    console.error("Erro ao fazer upload da foto:", error);
-    // O erro pode conter detalhes do backend (ex: mensagem de validação)
-    throw error;
-  }
-};
-
-// PUT /fotos-imoveis/{id}
-export const updateFotoImovel = async (id, fotoDTO) => {
-  try {
-    const response = await apiGeral.put(`/fotos-imoveis/${id}`, fotoDTO);
+    const response = await api.get(`/fotos-imoveis/imoveis/${imovelId}`);
     return response.data;
   } catch (error) {
-    console.error(`Erro ao atualizar foto com ID ${id}:`, error);
+    console.error('Erro ao buscar fotos do imóvel:', error);
     throw error;
   }
 };
 
-// DELETE /fotos-imoveis/{id}
-export const deleteFotoImovel = async (id) => {
+/**
+ * Buscar foto por ID
+ */
+export const getFotoById = async (id) => {
   try {
-    await apiGeral.delete(`/fotos-imoveis/${id}`);
-    return true; // Indica sucesso
+    const response = await api.get(`/fotos-imoveis/${id}`);
+    return response.data;
   } catch (error) {
-    console.error(`Erro ao excluir foto com ID ${id}:`, error);
+    console.error('Erro ao buscar foto:', error);
+    throw error;
+  }
+};
+
+/**
+ * Atualizar dados de uma foto (não o arquivo)
+ */
+export const updateFoto = async (id, dados) => {
+  try {
+    const response = await api.put(`/fotos-imoveis/${id}`, dados);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao atualizar foto:', error);
+    throw error;
+  }
+};
+
+/**
+ * Excluir uma foto
+ */
+export const deleteFoto = async (id) => {
+  try {
+    const response = await api.delete(`/fotos-imoveis/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao excluir foto:', error);
+    throw error;
+  }
+};
+
+/**
+ * Definir foto como capa
+ */
+export const setFotoAsCapa = async (id, imovelId) => {
+  try {
+    const response = await api.put(`/fotos-imoveis/${id}`, {
+      capa: true,
+      imovelId: imovelId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao definir foto como capa:', error);
     throw error;
   }
 };
